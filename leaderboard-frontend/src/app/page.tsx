@@ -5,21 +5,26 @@ import addPlayerAction, { PlayerProps } from "./action";
 
 export default function Home() {
   const [playersInfo, setPlayersInfo] = useState<PlayerProps[]>([]);
+  const [playerIdCounter, setPlayerIdCounter] = useState(1);
 
   const addPlayer = async () => {
-    const number = Math.round(Math.random() * 100);
+    const playerId = playerIdCounter;
+
     const payload = {
-      playerId: number,
-      playerName: `Player ${number}`,
+      playerId: playerId,
+      playerName: `Player ${playerId}`,
       score: 0,
       createdOn: new Date().toISOString(),
     };
+
     try {
       const response = await addPlayerAction(payload);
       if (response.ok) {
         const data = await response.json();
         console.log("Add Player", data);
+
         setPlayersInfo((prevPlayers) => [...prevPlayers, payload]);
+        setPlayerIdCounter(playerIdCounter + 1);
       } else {
         console.error("Failed to add player");
       }
@@ -39,20 +44,26 @@ export default function Home() {
       >
         Add Player
       </button>
-      <div className="flex flex-col w-1/4 gap-3">
-        <div className="flex border-solid border-b-2 font-bold p-2 justify-between text-white">
-          <div>Name</div>
-          <div>Roll Dice</div>
+      <div className="w-full max-w-xl px-4">
+        <div className="flex justify-between items-center border-b-2 border-white p-2 mb-4">
+          <div className="text-white text-lg font-bold w-1/4 text-left">
+            Name
+          </div>
+          <div className="text-white text-lg font-bold w-1/4 text-right">
+            Roll Dice
+          </div>
         </div>
         {playersInfo.map((player) => (
           <div
             key={player.playerId}
-            className="flex justify-between text-white"
+            className="flex justify-between items-center text-white text-lg p-2 bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.3)] transition-colors duration-300 rounded-lg shadow-md mb-2"
           >
-            <div>{player.playerName}</div>
-            <button className="px-4 py-2 bg-green-500 hover:bg-green-700 transition-colors duration-300 rounded-lg shadow-md font-semibold">
-              Play
-            </button>
+            <div className="w-1/4 text-left">{player.playerName}</div>
+            <div className="w-1/4 text-right">
+              <button className="px-4 py-2 bg-green-500 hover:bg-green-700 transition-colors duration-300 rounded-lg shadow-md font-semibold">
+                Play
+              </button>
+            </div>
           </div>
         ))}
       </div>

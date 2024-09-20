@@ -21,11 +21,15 @@ app.use(express.json());
 const streamName = "leaderboard";
 
 app.post("/addPlayer", async (req, res) => {
-  const data = req.body;
   console.log("player info: ", req.body);
   try {
-    await client.xadd(streamName, "*", "players", JSON.stringify(data));
-    res.status(200).json({ message: "Player added successfully" });
+    // await client.xadd(streamName, "*", "players", JSON.stringify(data));
+    const data = await client.hset(
+      "players",
+      `playerId ${req.body.playerId}`,
+      JSON.stringify(req.body)
+    );
+    res.status(200).json({ message: "Player added successfully", data });
   } catch (error) {
     console.error("Error adding player:", error);
     res
