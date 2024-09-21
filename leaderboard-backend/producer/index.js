@@ -24,17 +24,28 @@ app.post("/addPlayer", async (req, res) => {
   console.log("player info: ", req.body);
   try {
     // await client.xadd(streamName, "*", "players", JSON.stringify(data));
-    const data = await client.hset(
+    await client.hset(
       "players",
       `playerId ${req.body.playerId}`,
       JSON.stringify(req.body)
     );
-    res.status(200).json({ message: "Player added successfully", data });
+    res.status(200).json({ message: "Player added successfully" });
   } catch (error) {
     console.error("Error adding player:", error);
     res
       .status(500)
       .json({ error: "Error adding player", details: error.message });
+  }
+});
+
+app.post("/processData", async (req, res) => {
+  const data = req.body;
+  console.log("Process Data: ", data);
+  try {
+    await client.xadd(streamName, "*", `playerId ${data.playerId}`, data.score);
+    res.status(200).send({ message: "Player added successfully" });
+  } catch (error) {
+    res.status(500).send("Error adding player");
   }
 });
 

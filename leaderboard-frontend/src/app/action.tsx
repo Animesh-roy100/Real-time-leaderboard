@@ -17,3 +17,16 @@ export default async function addPlayerAction(playerInfo: PlayerProps) {
 
   return response;
 }
+
+export async function processDataAction(payload: any) {
+  const response = await fetch("http://localhost:4000/processData", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+  return data;
+}
