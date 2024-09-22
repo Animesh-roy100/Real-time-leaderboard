@@ -1,11 +1,37 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import addPlayerAction, { PlayerProps, processDataAction } from "./action";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 export default function Home() {
   const [playersInfo, setPlayersInfo] = useState<PlayerProps[]>([]);
   const [playerIdCounter, setPlayerIdCounter] = useState(1);
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+    });
+
+    socket.on("player-event", (player) => {
+      console.log("Received player event:", player);
+      setPlayersInfo((prevPlayers) =>
+        prevPlayers.map((p) =>
+          p.playerId === player.playerId ? { ...p, score: player.score } : p
+        )
+      );
+    });
+
+    return () => {
+      socket.off("player-event");
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated playersInfo:", playersInfo);
+  }, [playersInfo]);
 
   const addPlayer = async () => {
     const playerId = playerIdCounter;
@@ -40,12 +66,8 @@ export default function Home() {
     };
 
     try {
-      const { data } = await processDataAction(payload);
-      if (data) {
-        setPlayersInfo([...(playersInfo || []), data]);
-      } else {
-        console.error("Failed to process data");
-      }
+      await processDataAction(payload);
+      console.log("Processed data for player:", player.playerId);
     } catch (err) {
       console.error("Error processing data:", err);
     }
@@ -114,7 +136,7 @@ export default function Home() {
               </div>
             </div>
             {playersInfo &&
-              playersInfo
+              [...playersInfo]
                 .sort((a, b) => b.score - a.score)
                 .map((player, index) => (
                   <div
